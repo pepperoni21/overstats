@@ -26,6 +26,10 @@ func main() {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
+			if ctx.NArg() != 1 {
+				return fmt.Errorf("Error: battleTag is required")
+			}
+
 			err := checkHeroesCount(ctx.Int("heroesCount"))
 			if err != nil {
 				return err
