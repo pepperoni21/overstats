@@ -8,10 +8,10 @@ import (
 
 type JsonObject = map[string]interface{}
 
-func getCompetitiveStats(playerData JsonObject) JsonObject {
+func getCompetitiveStats(playerData JsonObject, platform string) JsonObject {
 	statsSection := playerData["stats"].(JsonObject)
-	pcSection := statsSection["pc"].(JsonObject)
-	return pcSection["competitive"].(JsonObject)
+	platformSection := statsSection[platform].(JsonObject)
+	return platformSection["competitive"].(JsonObject)
 }
 
 func getMostPlayedHeroes(competitiveStats JsonObject, heroesCount int, role string) []HeroInfo {
@@ -69,6 +69,9 @@ func getMostPlayedHero(mostPlayedHeroesMap map[string]float64) string {
 
 func generateHeroInfo(heroName string, competitiveStats JsonObject) HeroInfo {
 	careerStats := competitiveStats["career_stats"].(JsonObject)
+	if careerStats[heroName] == nil {
+		return HeroInfo{}
+	}
 	heroCareerStats := careerStats[heroName].([]interface{})
 	gameStats := heroCareerStats[3].(JsonObject)["stats"].([]interface{})
 
@@ -94,13 +97,21 @@ func getSummary(playerData JsonObject) JsonObject {
 	return playerData["summary"].(JsonObject)
 }
 
-func generateRankInfo(playerData JsonObject, role string) RankInfo {
+func generateRankInfo(playerData JsonObject, role string, platform string) RankInfo {
 	summary := getSummary(playerData)
 	competitive := summary["competitive"].(JsonObject)
-	pc := competitive["pc"].(JsonObject)
-	roleStats := pc[role].(JsonObject)
+	platformSection := competitive[platform].(JsonObject)
+	if platformSection[role] == nil {
+		return RankInfo{
+			Role:     role,
+			Season:   0,
+			Tier:     0,
+			Division: "",
+		}
+	}
+	roleStats := platformSection[role].(JsonObject)
 
-	season := pc["season"].(float64)
+	season := platformSection["season"].(float64)
 	division := roleStats["division"].(string)
 	tier := roleStats["tier"].(float64)
 

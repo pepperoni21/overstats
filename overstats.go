@@ -24,6 +24,12 @@ func main() {
 				Aliases: []string{"r"},
 				Usage:   "Role to display",
 			},
+			&cli.StringFlag{
+				Name:    "platform",
+				Aliases: []string{"p"},
+				Value:   "pc",
+				Usage:   "Platform to display",
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			if ctx.NArg() != 1 {
@@ -35,6 +41,10 @@ func main() {
 				return err
 			}
 			err = checkRole(ctx.String("role"))
+			if err != nil {
+				return err
+			}
+			err = checkPlatform(ctx.String("platform"))
 			if err != nil {
 				return err
 			}
@@ -55,12 +65,13 @@ func main() {
 			}
 
 			role := ctx.String("role")
+			platform := ctx.String("platform")
 
 			username := fetchUsername(data)
 			endorsement := fetchEndorsement(data)
-			rankInfo := generateRankInfo(data, role)
+			rankInfo := generateRankInfo(data, role, platform)
 
-			heroes := getMostPlayedHeroes(getCompetitiveStats(data), ctx.Int("heroesCount"), role)
+			heroes := getMostPlayedHeroes(getCompetitiveStats(data, platform), ctx.Int("heroesCount"), role)
 
 			playerInfo := PlayerInfo{
 				Name:        username,
@@ -95,6 +106,18 @@ func checkRole(role string) error {
 
 	if role != "tank" && role != "damage" && role != "support" {
 		return fmt.Errorf("Error: role must be tank, damage or support")
+	}
+
+	return nil
+}
+
+func checkPlatform(platform string) error {
+	if platform == "" {
+		return fmt.Errorf("Error: platform is required")
+	}
+
+	if platform != "pc" && platform != "console" {
+		return fmt.Errorf("Error: platform must be pc or console")
 	}
 
 	return nil
