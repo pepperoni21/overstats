@@ -21,6 +21,12 @@ func fetchPlayerData(battleTag string) (map[string]interface{}, error) {
 	return handleResponseAsMap(response)
 }
 
+func checkPrivateCareer(playerData map[string]interface{}) bool {
+	summary := playerData["summary"].(map[string]interface{})
+	privacy := summary["privacy"].(string)
+	return privacy == "private"
+}
+
 func formatBattleTag(battleTag string) string {
 	battleTag = strings.ReplaceAll(battleTag, "#", "-")
 	battleTag = strings.TrimSpace(battleTag)

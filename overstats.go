@@ -50,6 +50,10 @@ func main() {
 				return fmt.Errorf("Error: %s", data["error"])
 			}
 
+			if checkPrivateCareer(data) {
+				return fmt.Errorf("Error: %s's career is private", battleTag)
+			}
+
 			heroes := getMostPlayedHeroes(getCompetitiveStats(data), ctx.Int("heroesCount"), ctx.String("role"))
 
 			fmt.Printf("Most played heroes for %s:\n", battleTag)
