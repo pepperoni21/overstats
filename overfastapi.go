@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func fetchPlayerData(battleTag string) (map[string]interface{}, error) {
+func fetchPlayerData(battleTag string) (JsonObject, error) {
 	battleTag = formatBattleTag(battleTag)
 	overFastAPIURL := fmt.Sprintf("https://overfast-api.tekrop.fr/players/%s", battleTag)
 
@@ -19,12 +19,6 @@ func fetchPlayerData(battleTag string) (map[string]interface{}, error) {
 	}
 
 	return handleResponseAsMap(response)
-}
-
-func checkPrivateCareer(playerData map[string]interface{}) bool {
-	summary := playerData["summary"].(map[string]interface{})
-	privacy := summary["privacy"].(string)
-	return privacy == "private"
 }
 
 func formatBattleTag(battleTag string) string {
@@ -50,7 +44,7 @@ func fetchHeroesByRole(role string) ([]string, error) {
 
 	heroes := make([]string, len(data))
 	for i, hero := range data {
-		hero := hero.(map[string]interface{})
+		hero := hero.(JsonObject)
 		name := hero["key"].(string)
 		heroes[i] = name
 	}
@@ -58,7 +52,7 @@ func fetchHeroesByRole(role string) ([]string, error) {
 	return heroes, nil
 }
 
-func handleResponseAsMap(response *http.Response) (map[string]interface{}, error) {
+func handleResponseAsMap(response *http.Response) (JsonObject, error) {
 	defer response.Body.Close()
 
 	body, err := io.ReadAll(response.Body)
@@ -67,7 +61,7 @@ func handleResponseAsMap(response *http.Response) (map[string]interface{}, error
 		return nil, err
 	}
 
-	var data map[string]interface{}
+	var data JsonObject
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return nil, err

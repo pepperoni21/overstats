@@ -1,18 +1,18 @@
 package main
 
 type PlayerInfo struct {
-	Name          string
-	Region        string
-	NumberOfGames int
-	Rank          RankInfo
+	Name        string
+	Endorsement int8
+	Rank        RankInfo
 
 	HeroInfo []HeroInfo
 }
 
 type RankInfo struct {
-	Role  string
-	Rank  string
-	Score int
+	Season   int
+	Role     string
+	Division string
+	Tier     int
 }
 
 type HeroInfo struct {

@@ -6,17 +6,19 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func getCompetitiveStats(data map[string]interface{}) map[string]interface{} {
-	statsSection := data["stats"].(map[string]interface{})
-	pcSection := statsSection["pc"].(map[string]interface{})
-	return pcSection["competitive"].(map[string]interface{})
+type JsonObject = map[string]interface{}
+
+func getCompetitiveStats(playerData JsonObject) JsonObject {
+	statsSection := playerData["stats"].(JsonObject)
+	pcSection := statsSection["pc"].(JsonObject)
+	return pcSection["competitive"].(JsonObject)
 }
 
-func getMostPlayedHeroes(competitiveStats map[string]interface{}, heroesCount int, role string) []HeroInfo {
+func getMostPlayedHeroes(competitiveStats JsonObject, heroesCount int, role string) []HeroInfo {
 	mostPlayedHeroesMap := make(map[string]float64)
 
-	heroesComparaison := competitiveStats["heroes_comparisons"].(map[string]interface{})
-	timePlayed := heroesComparaison["time_played"].(map[string]interface{})["values"].([]interface{})
+	heroesComparaison := competitiveStats["heroes_comparisons"].(JsonObject)
+	timePlayed := heroesComparaison["time_played"].(JsonObject)["values"].([]interface{})
 
 	heroes, err := fetchHeroesByRole(role)
 	if err != nil {
@@ -24,7 +26,7 @@ func getMostPlayedHeroes(competitiveStats map[string]interface{}, heroesCount in
 	}
 
 	for _, hero := range timePlayed {
-		hero := hero.(map[string]interface{})
+		hero := hero.(JsonObject)
 		heroName := hero["hero"].(string)
 
 		if !slices.Contains(heroes, heroName) {
@@ -65,13 +67,13 @@ func getMostPlayedHero(mostPlayedHeroesMap map[string]float64) string {
 	return currentHero
 }
 
-func generateHeroInfo(heroName string, competitiveStats map[string]interface{}) HeroInfo {
-	careerStats := competitiveStats["career_stats"].(map[string]interface{})
+func generateHeroInfo(heroName string, competitiveStats JsonObject) HeroInfo {
+	careerStats := competitiveStats["career_stats"].(JsonObject)
 	heroCareerStats := careerStats[heroName].([]interface{})
-	gameStats := heroCareerStats[3].(map[string]interface{})["stats"].([]interface{})
+	gameStats := heroCareerStats[3].(JsonObject)["stats"].([]interface{})
 
-	gamesPlayed := gameStats[1].(map[string]interface{})["value"].(float64)
-	gamesWon := gameStats[2].(map[string]interface{})["value"].(float64)
+	gamesPlayed := gameStats[1].(JsonObject)["value"].(float64)
+	gamesWon := gameStats[2].(JsonObject)["value"].(float64)
 
 	winRate := gamesWon / gamesPlayed * 100
 
@@ -80,4 +82,45 @@ func generateHeroInfo(heroName string, competitiveStats map[string]interface{}) 
 		NumberOfGames: int(gamesPlayed),
 		WinPercentage: winRate,
 	}
+}
+
+func checkPrivateCareer(playerData JsonObject) bool {
+	summary := getSummary(playerData)
+	privacy := summary["privacy"].(string)
+	return privacy == "private"
+}
+
+func getSummary(playerData JsonObject) JsonObject {
+	return playerData["summary"].(JsonObject)
+}
+
+func generateRankInfo(playerData JsonObject, role string) RankInfo {
+	summary := getSummary(playerData)
+	competitive := summary["competitive"].(JsonObject)
+	pc := competitive["pc"].(JsonObject)
+	roleStats := pc[role].(JsonObject)
+
+	season := pc["season"].(float64)
+	division := roleStats["division"].(string)
+	tier := roleStats["tier"].(float64)
+
+	return RankInfo{
+		Role:     role,
+		Division: division,
+		Tier:     int(tier),
+		Season:   int(season),
+	}
+}
+
+func fetchUsername(playerData JsonObject) string {
+	summary := getSummary(playerData)
+	username := summary["username"].(string)
+	return username
+}
+
+func fetchEndorsement(playerData JsonObject) int8 {
+	summary := getSummary(playerData)
+	endorsement := summary["endorsement"].(JsonObject)
+	level := endorsement["level"].(float64)
+	return int8(level)
 }

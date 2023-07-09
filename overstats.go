@@ -54,12 +54,22 @@ func main() {
 				return fmt.Errorf("Error: %s's career is private", battleTag)
 			}
 
-			heroes := getMostPlayedHeroes(getCompetitiveStats(data), ctx.Int("heroesCount"), ctx.String("role"))
+			role := ctx.String("role")
 
-			fmt.Printf("Most played heroes for %s:\n", battleTag)
-			for _, hero := range heroes {
-				fmt.Printf("- %s: %d games played, %.2f%% win rate\n", hero.Name, hero.NumberOfGames, hero.WinPercentage)
+			username := fetchUsername(data)
+			endorsement := fetchEndorsement(data)
+			rankInfo := generateRankInfo(data, role)
+
+			heroes := getMostPlayedHeroes(getCompetitiveStats(data), ctx.Int("heroesCount"), role)
+
+			playerInfo := PlayerInfo{
+				Name:        username,
+				Endorsement: endorsement,
+				Rank:        rankInfo,
+				HeroInfo:    heroes,
 			}
+
+			displayPlayerInfo(playerInfo)
 
 			return nil
 		},
@@ -88,4 +98,16 @@ func checkRole(role string) error {
 	}
 
 	return nil
+}
+
+func displayPlayerInfo(playerInfo PlayerInfo) {
+	fmt.Println("Player info:")
+	fmt.Printf("- %s: %d endorsement level\n", playerInfo.Name, playerInfo.Endorsement)
+	fmt.Printf("- %s: %s %d\n", playerInfo.Rank.Role, playerInfo.Rank.Division, playerInfo.Rank.Tier)
+	fmt.Printf("- Season %d\n", playerInfo.Rank.Season)
+	heroes := playerInfo.HeroInfo
+	fmt.Println("Heroes:")
+	for _, hero := range heroes {
+		fmt.Printf("- %s: %d games played, %.2f%% win rate\n", hero.Name, hero.NumberOfGames, hero.WinPercentage)
+	}
 }
