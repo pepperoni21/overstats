@@ -17,3 +17,6 @@ To build the project, you need to have [Go](https://golang.org/) installed. Then
 go build
 ```
 It will create an executable file named `overstats` in the current directory.
+
+## TODO
+- [ ] Display player information (number of games, rank and region)
