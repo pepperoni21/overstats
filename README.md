@@ -21,5 +21,5 @@ It will create an executable file named `overstats` in the current directory.
 ## TODO
 - [X] Display the most played heroes and their win rates
 - [X] Display player information (number of games, rank and endorsement level)
-- [ ] Add platform support (currently only PC is supported)
+- [X] Add platform support (currently only PC is supported)
 - [ ] Make the output more readable and pretty
